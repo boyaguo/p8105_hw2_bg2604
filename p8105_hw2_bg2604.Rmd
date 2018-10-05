@@ -7,6 +7,7 @@ output: github_document
 
 ```{r}
 library(tidyverse)
+library(readxl)
 ```
 
 ```{r}
@@ -16,3 +17,35 @@ knitr::opts_chunk$set((echo = TRUE),
   out.width = "90%"
 )
 ```
+
+## Problem 1 
+
+1.1 Import NYC transit csv file usirng relative path, and clean the dataset.  
+
+```{r}
+transit_data = read_csv(file="./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv")%>%
+  janitor::clean_names() %>% 
+  gather(key = route_number, value=route_name,route1:route11)%>%
+  separate(route_number, into = c("route", "route_number"), sep = 5) %>%
+  filter(!is.na(route_name))%>%
+  select(line, station_name, station_latitude, station_longitude, route_number,route_name, entry, vending, entrance_type, ada)%>%
+  mutate(entry=ifelse(entry=='YES',yes=TRUE,no=FALSE))%>%
+  arrange(line,station_name)
+```
+
+The NYC transit dataset contains: 
+Division, line, station names, station and entrance locations, routes in each station, differnet trains for each route in station, whether the station allows entrance or vending, entrance type, staffs, free crossover, North South and East West streets and corners,and ADA compliance.
+
+Cleaning steps: 
+
+With the understanding of dataset, I noticed that the routes is speard across 11 columns. I used the "gather" function to transpose. Then, I used "seperate" function to split the "route_number" column into "route"
+and "route_number". After that, I used "filter" function to only detect observations with non-missing "route_name". I used "select" function to retain the variables I need, and converted the "entry"" variable from character to a logical variable. For the last step, I arranged the dataset by "line"" and "station_name". 
+
+The dimension of this dataset is `r nrow(transit_data)` by `r ncol(transit_data)` dataset.These data are tidy.
+
+
+
+
+
+
+
