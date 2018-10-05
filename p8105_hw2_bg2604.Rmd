@@ -1,0 +1,18 @@
+---
+title: "p8105_hw2_bg2604"
+author: "Boya Guo"
+date: "10/5/2018"
+output: github_document
+---
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+knitr::opts_chunk$set((echo = TRUE),
+  fig.width = 6,
+  fig.asp = .6,
+  out.width = "90%"
+)
+```
