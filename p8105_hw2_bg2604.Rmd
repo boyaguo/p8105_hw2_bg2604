@@ -19,7 +19,7 @@ knitr::opts_chunk$set((echo = TRUE),
 )
 ```
 
-## Problem 1 
+## Problem 1 NYC Transit 
 
 1.1 Import NYC transit csv file usirng relative path, and clean the dataset.  
 
@@ -86,11 +86,98 @@ nrow(a_ada)
 
 There are 60 distinct stations serve the A train; of the stations that serve the A train, 17 are ADA compliant.
 
+## Problem 2 Mr Trash Wheel 
 
+Read and clean dataset
 
+```{r 2.1}
+trash = read_excel(path = './data/HealthyHarborWaterWheelTotals2018-7-28.xlsx',sheet = 'Mr. Trash Wheel',range = cell_cols("A:N"))%>%
+  janitor::clean_names()%>%
+  filter(!is.na(date))%>%
+  mutate(sports_balls=as.integer(signif(sports_balls)))
+```
 
+Read and clean precipitation data for 2016 and 2017
 
+```{r}
+pre_2016 = read_excel(path = './data/HealthyHarborWaterWheelTotals2018-7-28.xlsx',sheet = '2016 Precipitation',range = cell_rows(2:14))%>%
+  janitor::clean_names()%>%
+  mutate(year=2016)
 
+pre_2017 = read_excel(path = './data/HealthyHarborWaterWheelTotals2018-7-28.xlsx',sheet = '2017 Precipitation',range = cell_rows(2:14))%>%
+  janitor::clean_names()%>%
+  mutate(year=2017)
 
+pre_1617=bind_rows(pre_2016,pre_2017)%>%
+  janitor::clean_names()%>%
+  select(year, everything())%>%
+  mutate(month=month.name[month])
+```
 
+Mr.Trash Wheel dataset has `r nrow(trash)`
+observations and the key variable is weight_tons.
 
+The dataset for year 2016-2017 precipitation has `r nrow(pre_1617)` observations and the key variable is total precipitation for each month. 
+
+The total precipitation in 2017 is `r sum(pre_2017$total)`.
+
+The median number of sports balls in a dumpster in 2016 is `r trash %>% filter(year==2016,!is.na(sports_balls)) %>% pull(sports_balls) %>% median()`.
+
+## Problem 3
+
+Format and clean data 
+
+```{r 3.1}
+devtools::install_github("p8105/p8105.datasets")
+library(p8105.datasets)
+brfsm=brfss_smart2010 %>% 
+  janitor::clean_names() %>%
+  separate(locationdesc, into = c("state", "county"), sep = " - ") %>%
+  filter(topic=='Overall Health')%>%
+  select(-class,-topic,-question,-sample_size,-locationabbr,-(confidence_limit_low:geo_location))%>%
+  spread(key = response, value = data_value)%>%
+  janitor::clean_names()%>%
+  select(year,state,county,excellent,very_good,good,fair,poor)%>%
+  mutate(above_good=excellent+very_good)
+```
+
+Answer questions 
+
+```{r}
+nrow(distinct(brfsm,state,county))
+
+nrow(distinct(brfsm,state))
+
+count(brfsm,state)%>%
+  arrange(-n)%>%
+  head(1)
+
+brfsm%>%
+  filter(year==2002, !is.na(excellent)) %>% 
+  pull(excellent) %>% 
+  median()
+
+brfsm%>%
+  filter(year==2002)%>%
+  ggplot(aes(x = excellent))+ 
+  geom_histogram()+
+  labs(
+    title = '"Excellent" response values in 2002',
+    x = 'Proportion of "Excellent"'
+  )
+
+brfsm%>%
+  filter(county =='New York County' | county == 'Queens County')%>%
+  ggplot(aes(x = year, y = excellent))+ 
+  geom_point(aes(color = county))+
+  labs(
+    title = '“Excellent” response in 2 counties',
+    x = 'Proportion of "Excellent"'
+  )
+```
+
+There are 404 unique locations are included in the dataset. 
+
+All states are represented; NJ is the state observed the most.  
+
+In 2002, the median of the “Excellent” response value is 23.6.
