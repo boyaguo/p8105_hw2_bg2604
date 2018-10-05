@@ -123,7 +123,7 @@ The total precipitation in 2017 is `r sum(pre_2017$total)`.
 
 The median number of sports balls in a dumpster in 2016 is `r trash %>% filter(year==2016,!is.na(sports_balls)) %>% pull(sports_balls) %>% median()`.
 
-## Problem 3
+## Problem 3 BRFSS
 
 Format and clean data 
 
